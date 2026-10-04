@@ -2,33 +2,11 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-# ============================================================
-# PAGE CONFIG
-# ============================================================
-
 st.set_page_config(
-    page_title="SupplyTrack",
+    page_title="SupplyTrack Control Tower",
     page_icon="📦",
-    layout="wide",
-    initial_sidebar_state="expanded"
+    layout="wide"
 )
-
-# ============================================================
-# COLOR SYSTEM
-# ============================================================
-
-BG = "#07111f"
-SIDEBAR = "#0b1728"
-PANEL = "#0d1d30"
-TEXT = "#e8f1f8"
-MUTED = "#91a7b8"
-
-CYAN = "#62d9ff"
-ORANGE = "#ffb347"
-GREEN = "#7ee081"
-RED = "#ff6b6b"
-PURPLE = "#b084ff"
-YELLOW = "#f7d154"
 
 # ============================================================
 # LOAD DATA
@@ -37,132 +15,123 @@ YELLOW = "#f7d154"
 @st.cache_data
 def load_data():
 
-    forecast = pd.read_csv(
+    risk = pd.read_csv(
         "./outputs/inventory_risk_analysis.csv"
+    )
+
+    forecast = pd.read_csv(
+        "./outputs/future_demand_forecast.csv"
+    )
+
+    optimization = pd.read_csv(
+        "./outputs/inventory_optimization.csv"
+    )
+
+    stock_analysis = pd.read_csv(
+        "./outputs/stockout_overstock_analysis.csv"
+    )
+
+    sku = pd.read_csv(
+        "./outputs/sku_demand_analysis.csv"
+    )
+
+    warehouse = pd.read_csv(
+        "./outputs/warehouse_demand_analysis.csv"
+    )
+
+    what_if = pd.read_csv(
+        "./outputs/what_if_simulation.csv"
+    )
+
+    evaluation = pd.read_csv(
+        "./outputs/time_based_evaluation.csv"
     )
 
     raw = pd.read_csv(
         "./data/raw/supply_chain_dataset1.csv"
     )
 
-    raw["Date"] = pd.to_datetime(raw["Date"])
-    forecast["Date"] = pd.to_datetime(forecast["Date"])
+    risk["Date"] = pd.to_datetime(risk["Date"])
 
-    identifiers = raw[
-        [
-            "Date",
-            "SKU_ID",
-            "Warehouse_ID",
-            "Supplier_ID",
-            "Region"
-        ]
-    ].copy()
+    forecast["Date"] = pd.to_datetime(
+        forecast["Date"]
+    )
 
-    df = forecast.copy()
-
-    for column in [
-        "SKU_ID",
-        "Warehouse_ID",
-        "Supplier_ID",
-        "Region"
-    ]:
-
-        if column not in df.columns:
-            df[column] = identifiers[column].values
-
-    return df, raw
+    return (
+        risk,
+        forecast,
+        optimization,
+        stock_analysis,
+        sku,
+        warehouse,
+        what_if,
+        evaluation,
+        raw
+    )
 
 
-try:
-
-    df, raw = load_data()
-
-except Exception as e:
-
-    st.error("Unable to load project data.")
-    st.code(str(e))
-    st.stop()
+(
+    risk,
+    forecast,
+    optimization,
+    stock_analysis,
+    sku,
+    warehouse,
+    what_if,
+    evaluation,
+    raw
+) = load_data()
 
 # ============================================================
-# CUSTOM CSS
+# STYLE
 # ============================================================
 
 st.markdown(
-    f"""
+    """
     <style>
 
-    .stApp {{
-        background-color: {BG};
-        color: {TEXT};
-    }}
+    .stApp {
+        background-color: #07111f;
+        color: #e8f1f8;
+    }
 
-    section[data-testid="stSidebar"] {{
-        background-color: {SIDEBAR};
-        border-right: 1px solid #19314a;
-    }}
+    section[data-testid="stSidebar"] {
+        background-color: #0b1728;
+    }
 
-    section[data-testid="stSidebar"] * {{
-        color: {TEXT};
-    }}
-
-    .main-title {{
-        font-size: 38px;
-        font-weight: 800;
-        letter-spacing: 2px;
-        color: {TEXT};
-        margin-bottom: 0;
-    }}
-
-    .subtitle {{
-        color: {MUTED};
-        font-size: 15px;
-        margin-top: 3px;
-        margin-bottom: 25px;
-    }}
-
-    .metric-card {{
-        background: {PANEL};
-        border: 1px solid #19314a;
+    .tower {
+        background-color: #0d1d30;
+        padding: 24px;
+        border: 1px solid #183550;
         border-radius: 12px;
-        padding: 18px;
-        min-height: 115px;
-    }}
+        margin-bottom: 20px;
+    }
 
-    .metric-label {{
-        color: {MUTED};
-        font-size: 13px;
-        margin-bottom: 8px;
-    }}
-
-    .metric-value {{
-        color: {CYAN};
-        font-size: 28px;
-        font-weight: 750;
-    }}
-
-    .section-title {{
-        color: {TEXT};
-        font-size: 20px;
+    .tower-title {
+        font-size: 30px;
         font-weight: 700;
-        margin-top: 25px;
-        margin-bottom: 10px;
-    }}
+        color: #62d9ff;
+    }
 
-    .status-box {{
-        background: {PANEL};
-        border: 1px solid #19314a;
-        border-radius: 10px;
-        padding: 12px 16px;
-    }}
+    .tower-subtitle {
+        color: #8da6bb;
+        font-size: 14px;
+    }
 
-    .status-online {{
-        color: {GREEN};
+    .section-title {
+        font-size: 21px;
         font-weight: 600;
-    }}
+        color: #e8f1f8;
+        margin-top: 25px;
+    }
 
-    .status-label {{
-        color: {MUTED};
-    }}
+    .status {
+        padding: 12px;
+        background-color: #0d1d30;
+        border-left: 4px solid #62d9ff;
+        border-radius: 6px;
+        margin-bottom: 10px;
+    }
 
     </style>
     """,
@@ -174,25 +143,42 @@ st.markdown(
 # ============================================================
 
 st.markdown(
-    '<div class="main-title">📦 SUPPLYTRACK</div>',
-    unsafe_allow_html=True
-)
+    """
+    <div class="tower">
+        <div class="tower-title">
+            SUPPLYTRACK
+        </div>
 
-st.markdown(
-    '<div class="subtitle">Supply Chain Demand Forecasting & Inventory Management</div>',
+        <div class="tower-subtitle">
+            Supply Chain Demand Forecasting & Inventory Management
+        </div>
+
+        <br>
+
+        <div>
+            CONTROL TOWER / NETWORK OPERATIONS
+        </div>
+    </div>
+    """,
     unsafe_allow_html=True
 )
 
 # ============================================================
-# SIDEBAR
+# SIDEBAR FILTERS
 # ============================================================
 
-st.sidebar.markdown("## CONTROL PANEL")
-
-st.sidebar.markdown("### Filters")
+st.sidebar.title("CONTROL TOWER")
 
 regions = ["All"] + sorted(
-    df["Region"].dropna().astype(str).unique().tolist()
+    raw["Region"].unique().tolist()
+)
+
+warehouses = ["All"] + sorted(
+    raw["Warehouse_ID"].unique().tolist()
+)
+
+skus = ["All"] + sorted(
+    raw["SKU_ID"].unique().tolist()
 )
 
 selected_region = st.sidebar.selectbox(
@@ -200,17 +186,9 @@ selected_region = st.sidebar.selectbox(
     regions
 )
 
-warehouses = ["All"] + sorted(
-    df["Warehouse_ID"].dropna().astype(str).unique().tolist()
-)
-
 selected_warehouse = st.sidebar.selectbox(
     "Warehouse",
     warehouses
-)
-
-skus = ["All"] + sorted(
-    df["SKU_ID"].dropna().astype(str).unique().tolist()
 )
 
 selected_sku = st.sidebar.selectbox(
@@ -219,485 +197,370 @@ selected_sku = st.sidebar.selectbox(
 )
 
 # ============================================================
-# FILTER DATA
+# FILTER FORECAST DATA
 # ============================================================
 
-filtered = df.copy()
+filtered = forecast.copy()
 
 if selected_region != "All":
-
     filtered = filtered[
-        filtered["Region"].astype(str) == selected_region
+        filtered["Region"] == selected_region
     ]
 
 if selected_warehouse != "All":
-
     filtered = filtered[
-        filtered["Warehouse_ID"].astype(str) == selected_warehouse
+        filtered["Warehouse_ID"]
+        == selected_warehouse
     ]
 
 if selected_sku != "All":
-
     filtered = filtered[
-        filtered["SKU_ID"].astype(str) == selected_sku
+        filtered["SKU_ID"]
+        == selected_sku
     ]
 
 # ============================================================
-# KPI CALCULATIONS
+# KPI ROW
 # ============================================================
 
-active_skus = filtered["SKU_ID"].nunique()
+total_demand = filtered[
+    "Predicted_Demand"
+].sum()
 
-forecast_demand = filtered["Predicted_Demand"].sum()
+avg_inventory = filtered[
+    "Inventory_Level"
+].mean()
 
-inventory = filtered["Inventory_Level"].sum()
-
-risk_records = filtered[
-    filtered["Stockout_Risk"].isin(
-        ["MEDIUM", "HIGH"]
-    )
-].shape[0]
-
-reorder_units = filtered["Recommended_Order"].sum()
-
-# ============================================================
-# NETWORK SNAPSHOT
-# ============================================================
-
-st.markdown(
-    '<div class="section-title">Network Snapshot</div>',
-    unsafe_allow_html=True
+risk_count = len(
+    stock_analysis[
+        stock_analysis["Inventory_Status"]
+        != "OPTIMAL"
+    ]
 )
+
+reorder_units = optimization[
+    "Recommended_Order"
+].sum()
+
+active_skus = filtered[
+    "SKU_ID"
+].nunique()
 
 c1, c2, c3, c4, c5 = st.columns(5)
 
-with c1:
+c1.metric(
+    "ACTIVE SKUs",
+    f"{active_skus:,}"
+)
 
-    st.markdown(
-        f"""
-        <div class="metric-card">
-            <div class="metric-label">ACTIVE SKUs</div>
-            <div class="metric-value">{active_skus:,}</div>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+c2.metric(
+    "FORECAST DEMAND",
+    f"{total_demand:,.0f}"
+)
 
-with c2:
+c3.metric(
+    "AVG INVENTORY",
+    f"{avg_inventory:,.0f}"
+)
 
-    st.markdown(
-        f"""
-        <div class="metric-card">
-            <div class="metric-label">FORECAST DEMAND</div>
-            <div class="metric-value">{forecast_demand:,.0f}</div>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+c4.metric(
+    "RISK RECORDS",
+    f"{risk_count:,}"
+)
 
-with c3:
-
-    st.markdown(
-        f"""
-        <div class="metric-card">
-            <div class="metric-label">INVENTORY UNITS</div>
-            <div class="metric-value">{inventory:,.0f}</div>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-with c4:
-
-    st.markdown(
-        f"""
-        <div class="metric-card">
-            <div class="metric-label">RISK RECORDS</div>
-            <div class="metric-value">{risk_records:,}</div>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-with c5:
-
-    st.markdown(
-        f"""
-        <div class="metric-card">
-            <div class="metric-label">REORDER UNITS</div>
-            <div class="metric-value">{reorder_units:,.0f}</div>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+c5.metric(
+    "REORDER UNITS",
+    f"{reorder_units:,.0f}"
+)
 
 # ============================================================
 # DEMAND SIGNAL
 # ============================================================
 
 st.markdown(
-    '<div class="section-title">Demand Signal</div>',
+    '<div class="section-title">DEMAND SIGNAL</div>',
     unsafe_allow_html=True
 )
 
-demand_chart = (
+daily = (
     filtered
-    .groupby("Date", as_index=False)
-    .agg(
-        Actual_Demand=("Demand_Forecast", "mean"),
-        Predicted_Demand=("Predicted_Demand", "mean")
-    )
-    .sort_values("Date")
+    .groupby("Date")["Predicted_Demand"]
+    .sum()
+    .reset_index()
 )
 
-fig_demand = px.line(
-    demand_chart,
+fig = px.line(
+    daily,
     x="Date",
-    y=[
-        "Actual_Demand",
-        "Predicted_Demand"
-    ],
-    title="Actual vs Predicted Demand",
-    color_discrete_map={
-        "Actual_Demand": CYAN,
-        "Predicted_Demand": ORANGE
-    }
-)
-
-fig_demand.update_layout(
-    paper_bgcolor=PANEL,
-    plot_bgcolor=PANEL,
-    font_color=TEXT,
-    legend_title_text="",
-    margin=dict(
-        l=20,
-        r=20,
-        t=50,
-        b=20
-    ),
-    hovermode="x unified"
-)
-
-fig_demand.update_xaxes(
-    showgrid=False,
-    color=MUTED
-)
-
-fig_demand.update_yaxes(
-    showgrid=True,
-    gridcolor="#19314a",
-    color=MUTED
-)
-
-st.plotly_chart(
-    fig_demand,
-    use_container_width=True
-)
-
-# ============================================================
-# WAREHOUSE LOAD
-# ============================================================
-
-st.markdown(
-    '<div class="section-title">Warehouse Load</div>',
-    unsafe_allow_html=True
-)
-
-warehouse_data = (
-    filtered
-    .groupby("Warehouse_ID", as_index=False)
-    .agg(
-        Forecast_Demand=(
-            "Predicted_Demand",
-            "sum"
-        ),
-        Inventory_Level=(
-            "Inventory_Level",
-            "sum"
-        )
-    )
-)
-
-fig_warehouse = px.bar(
-    warehouse_data,
-    x="Warehouse_ID",
-    y=[
-        "Forecast_Demand",
-        "Inventory_Level"
-    ],
-    barmode="group",
-    title="Demand vs Inventory by Warehouse",
-    color_discrete_map={
-        "Forecast_Demand": CYAN,
-        "Inventory_Level": ORANGE
-    }
-)
-
-fig_warehouse.update_layout(
-    paper_bgcolor=PANEL,
-    plot_bgcolor=PANEL,
-    font_color=TEXT,
-    legend_title_text="",
-    margin=dict(
-        l=20,
-        r=20,
-        t=50,
-        b=20
-    )
-)
-
-fig_warehouse.update_xaxes(
-    showgrid=False,
-    color=MUTED
-)
-
-fig_warehouse.update_yaxes(
-    showgrid=True,
-    gridcolor="#19314a",
-    color=MUTED
-)
-
-st.plotly_chart(
-    fig_warehouse,
-    use_container_width=True
-)
-
-# ============================================================
-# REGIONAL DEMAND
-# ============================================================
-
-st.markdown(
-    '<div class="section-title">Regional Demand</div>',
-    unsafe_allow_html=True
-)
-
-region_data = (
-    filtered
-    .groupby("Region", as_index=False)
-    .agg(
-        Predicted_Demand=(
-            "Predicted_Demand",
-            "sum"
-        )
-    )
-    .sort_values(
-        "Predicted_Demand",
-        ascending=False
-    )
-)
-
-fig_region = px.bar(
-    region_data,
-    x="Region",
     y="Predicted_Demand",
-    title="Forecast Demand by Region",
-    color_discrete_sequence=[
-        GREEN
+    template="plotly_dark",
+    title="Forecast Demand Timeline"
+)
+
+fig.update_layout(
+    paper_bgcolor="#07111f",
+    plot_bgcolor="#0d1d30"
+)
+
+st.plotly_chart(
+    fig,
+    use_container_width=True
+)
+
+# ============================================================
+# NETWORK VIEW
+# ============================================================
+
+st.markdown(
+    '<div class="section-title">NETWORK VIEW</div>',
+    unsafe_allow_html=True
+)
+
+left, right = st.columns(2)
+
+with left:
+
+    warehouse_chart = (
+        filtered
+        .groupby("Warehouse_ID")
+        ["Predicted_Demand"]
+        .sum()
+        .reset_index()
+    )
+
+    fig = px.bar(
+        warehouse_chart,
+        x="Warehouse_ID",
+        y="Predicted_Demand",
+        template="plotly_dark",
+        title="Warehouse Demand Load"
+    )
+
+    fig.update_layout(
+        paper_bgcolor="#07111f",
+        plot_bgcolor="#0d1d30"
+    )
+
+    st.plotly_chart(
+        fig,
+        use_container_width=True
+    )
+
+with right:
+
+    region_chart = (
+        filtered
+        .groupby("Region")
+        ["Predicted_Demand"]
+        .sum()
+        .reset_index()
+    )
+
+    fig = px.bar(
+        region_chart,
+        x="Region",
+        y="Predicted_Demand",
+        template="plotly_dark",
+        title="Regional Demand"
+    )
+
+    fig.update_layout(
+        paper_bgcolor="#07111f",
+        plot_bgcolor="#0d1d30"
+    )
+
+    st.plotly_chart(
+        fig,
+        use_container_width=True
+    )
+
+# ============================================================
+# INVENTORY CONTROL
+# ============================================================
+
+st.markdown(
+    '<div class="section-title">INVENTORY CONTROL</div>',
+    unsafe_allow_html=True
+)
+
+left, right = st.columns(2)
+
+with left:
+
+    status_chart = (
+        stock_analysis
+        ["Inventory_Status"]
+        .value_counts()
+        .reset_index()
+    )
+
+    status_chart.columns = [
+        "Status",
+        "Count"
     ]
-)
 
-fig_region.update_layout(
-    paper_bgcolor=PANEL,
-    plot_bgcolor=PANEL,
-    font_color=TEXT,
-    showlegend=False,
-    margin=dict(
-        l=20,
-        r=20,
-        t=50,
-        b=20
+    fig = px.bar(
+        status_chart,
+        x="Status",
+        y="Count",
+        template="plotly_dark",
+        title="Inventory Status"
     )
-)
 
-fig_region.update_xaxes(
-    showgrid=False,
-    color=MUTED
-)
+    fig.update_layout(
+        paper_bgcolor="#07111f",
+        plot_bgcolor="#0d1d30"
+    )
 
-fig_region.update_yaxes(
-    showgrid=True,
-    gridcolor="#19314a",
-    color=MUTED
-)
+    st.plotly_chart(
+        fig,
+        use_container_width=True
+    )
 
-st.plotly_chart(
-    fig_region,
-    use_container_width=True
-)
+with right:
+
+    risk_chart = (
+        risk["Stockout_Risk"]
+        .value_counts()
+        .reset_index()
+    )
+
+    risk_chart.columns = [
+        "Risk",
+        "Count"
+    ]
+
+    fig = px.bar(
+        risk_chart,
+        x="Risk",
+        y="Count",
+        template="plotly_dark",
+        title="Inventory Risk Monitor"
+    )
+
+    fig.update_layout(
+        paper_bgcolor="#07111f",
+        plot_bgcolor="#0d1d30"
+    )
+
+    st.plotly_chart(
+        fig,
+        use_container_width=True
+    )
 
 # ============================================================
-# INVENTORY RISK MONITOR
-# ============================================================
-
-st.markdown(
-    '<div class="section-title">Inventory Risk Monitor</div>',
-    unsafe_allow_html=True
-)
-
-risk_data = (
-    filtered
-    .groupby("Stockout_Risk")
-    .size()
-    .reset_index(
-        name="Count"
-    )
-)
-
-risk_order = [
-    "LOW",
-    "MEDIUM",
-    "HIGH"
-]
-
-risk_data["Stockout_Risk"] = pd.Categorical(
-    risk_data["Stockout_Risk"],
-    categories=risk_order,
-    ordered=True
-)
-
-risk_data = risk_data.sort_values(
-    "Stockout_Risk"
-)
-
-fig_risk = px.bar(
-    risk_data,
-    x="Stockout_Risk",
-    y="Count",
-    title="Inventory Risk Distribution",
-    color="Stockout_Risk",
-    color_discrete_map={
-        "LOW": GREEN,
-        "MEDIUM": ORANGE,
-        "HIGH": RED
-    }
-)
-
-fig_risk.update_layout(
-    paper_bgcolor=PANEL,
-    plot_bgcolor=PANEL,
-    font_color=TEXT,
-    showlegend=False,
-    margin=dict(
-        l=20,
-        r=20,
-        t=50,
-        b=20
-    )
-)
-
-fig_risk.update_xaxes(
-    showgrid=False,
-    color=MUTED
-)
-
-fig_risk.update_yaxes(
-    showgrid=True,
-    gridcolor="#19314a",
-    color=MUTED
-)
-
-st.plotly_chart(
-    fig_risk,
-    use_container_width=True
-)
-
-# ============================================================
-# MODEL PERFORMANCE
+# SKU ANALYSIS
 # ============================================================
 
 st.markdown(
-    '<div class="section-title">Forecast Model Performance</div>',
+    '<div class="section-title">SKU DEMAND ANALYSIS</div>',
     unsafe_allow_html=True
 )
 
-try:
-
-    evaluation = pd.read_csv(
-        "./outputs/model_evaluation.csv"
-    )
-
-    mae = float(
-        evaluation.loc[
-            evaluation["Metric"] == "MAE",
-            "Value"
-        ].iloc[0]
-    )
-
-    rmse = float(
-        evaluation.loc[
-            evaluation["Metric"] == "RMSE",
-            "Value"
-        ].iloc[0]
-    )
-
-    m1, m2 = st.columns(2)
-
-    with m1:
-
-        st.markdown(
-            f"""
-            <div class="metric-card">
-                <div class="metric-label">MAE</div>
-                <div class="metric-value">{mae:.4f}</div>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-    with m2:
-
-        st.markdown(
-            f"""
-            <div class="metric-card">
-                <div class="metric-label">RMSE</div>
-                <div class="metric-value">{rmse:.4f}</div>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-except Exception as e:
-
-    st.warning(
-        "Model evaluation file could not be loaded."
-    )
+st.dataframe(
+    sku.head(15),
+    use_container_width=True,
+    hide_index=True
+)
 
 # ============================================================
 # REPLENISHMENT WATCHLIST
 # ============================================================
 
 st.markdown(
-    '<div class="section-title">Replenishment Watchlist</div>',
+    '<div class="section-title">REPLENISHMENT WATCHLIST</div>',
     unsafe_allow_html=True
 )
 
-watchlist = (
-    filtered[
-        filtered["Recommended_Order"] > 0
-    ]
-    .sort_values(
-        "Recommended_Order",
-        ascending=False
-    )
-    [
-        [
-            "SKU_ID",
-            "Warehouse_ID",
-            "Region",
-            "Predicted_Demand",
-            "Inventory_Level",
-            "Supplier_Lead_Time_Days",
-            "Recommended_Order",
-            "Stockout_Risk"
-        ]
-    ]
-    .head(15)
+watchlist = optimization[
+    optimization["Recommended_Order"] > 0
+].sort_values(
+    "Recommended_Order",
+    ascending=False
 )
 
 st.dataframe(
-    watchlist,
-    width="stretch",
+    watchlist.head(15),
+    use_container_width=True,
     hide_index=True
+)
+
+# ============================================================
+# WHAT-IF SIMULATION
+# ============================================================
+
+st.markdown(
+    '<div class="section-title">WHAT-IF SIMULATION</div>',
+    unsafe_allow_html=True
+)
+
+demand_change = st.slider(
+    "Demand Change (%)",
+    min_value=-20,
+    max_value=20,
+    value=0,
+    step=10
+)
+
+lead_change = st.slider(
+    "Lead Time Change (Days)",
+    min_value=-2,
+    max_value=2,
+    value=0,
+    step=1
+)
+
+scenario = what_if[
+    (what_if["Demand_Change_Percent"]
+     == demand_change)
+    &
+    (what_if["Lead_Time_Change_Days"]
+     == lead_change)
+]
+
+if not scenario.empty:
+
+    st.metric(
+        "Scenario Order Requirement",
+        f"{scenario['Scenario_Order'].sum():,.0f}"
+    )
+
+    st.metric(
+        "Scenario Reorder Point",
+        f"{scenario['Scenario_Reorder_Point'].mean():,.2f}"
+    )
+
+# ============================================================
+# MODEL PERFORMANCE
+# ============================================================
+
+st.markdown(
+    '<div class="section-title">FORECAST MODEL PERFORMANCE</div>',
+    unsafe_allow_html=True
+)
+
+m1, m2 = st.columns(2)
+
+mae = evaluation.loc[
+    evaluation["Metric"]
+    == "Time-Based MAE",
+    "Value"
+].iloc[0]
+
+rmse = evaluation.loc[
+    evaluation["Metric"]
+    == "Time-Based RMSE",
+    "Value"
+].iloc[0]
+
+m1.metric(
+    "TIME-BASED MAE",
+    f"{mae:.4f}"
+)
+
+m2.metric(
+    "TIME-BASED RMSE",
+    f"{rmse:.4f}"
 )
 
 # ============================================================
@@ -705,75 +568,31 @@ st.dataframe(
 # ============================================================
 
 st.markdown(
-    '<div class="section-title">System Status</div>',
+    '<div class="section-title">SYSTEM STATUS</div>',
     unsafe_allow_html=True
 )
 
-s1, s2, s3 = st.columns(3)
-
-with s1:
-
-    st.markdown(
-        f"""
-        <div class="status-box">
-            <span class="status-label">
-                Forecast Engine
-            </span>
-            <br>
-            <span class="status-online">
-                ● ONLINE
-            </span>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-with s2:
-
-    st.markdown(
-        f"""
-        <div class="status-box">
-            <span class="status-label">
-                Inventory Monitor
-            </span>
-            <br>
-            <span class="status-online">
-                ● ONLINE
-            </span>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-with s3:
-
-    st.markdown(
-        f"""
-        <div class="status-box">
-            <span class="status-label">
-                Replenishment Engine
-            </span>
-            <br>
-            <span class="status-online">
-                ● ONLINE
-            </span>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-# ============================================================
-# FOOTER
-# ============================================================
-
 st.markdown(
     """
-    <br>
-    <center>
-        <span style="color:#5f7487;">
-            SupplyTrack • Demand Forecasting & Inventory Management
-        </span>
-    </center>
+    <div class="status">
+        ● FORECAST ENGINE — ONLINE
+    </div>
+
+    <div class="status">
+        ● INVENTORY OPTIMIZATION — ONLINE
+    </div>
+
+    <div class="status">
+        ● REPLENISHMENT ENGINE — ONLINE
+    </div>
+
+    <div class="status">
+        ● WHAT-IF SIMULATION — ONLINE
+    </div>
     """,
     unsafe_allow_html=True
+)
+
+st.caption(
+    "SupplyTrack | Supply Chain Control Tower"
 )
