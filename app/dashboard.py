@@ -140,30 +140,18 @@ st.markdown(
 
 # ============================================================
 # HEADER
-# ============================================================
 
 st.markdown(
     """
-    <div class="tower">
-        <div class="tower-title">
-            SUPPLYTRACK
-        </div>
-
-        <div class="tower-subtitle">
-            Supply Chain Demand Forecasting & Inventory Management
-        </div>
-
-        <br>
-
-        <div>
-            CONTROL TOWER / NETWORK OPERATIONS
-        </div>
-    </div>
-    """,
+<div class="tower">
+<div class="tower-title">SUPPLYTRACK</div>
+<div class="tower-subtitle">Supply Chain Demand Forecasting & Inventory Management</div>
+<div class="tower-mode">CONTROL TOWER / NETWORK OPERATIONS</div>
+</div>
+""",
     unsafe_allow_html=True
 )
 
-# ============================================================
 # SIDEBAR FILTERS
 # ============================================================
 
