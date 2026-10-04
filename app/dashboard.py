@@ -285,6 +285,10 @@ fig = px.line(
     title="Forecast Demand Timeline"
 )
 
+fig.update_traces(
+    line=dict(color="#62d9ff", width=3)
+)
+
 fig.update_layout(
     paper_bgcolor="#07111f",
     plot_bgcolor="#0d1d30"
@@ -324,6 +328,10 @@ with left:
         title="Warehouse Demand Load"
     )
 
+    fig.update_traces(
+        marker_color="#62d9ff"
+    )
+
     fig.update_layout(
         paper_bgcolor="#07111f",
         plot_bgcolor="#0d1d30"
@@ -350,6 +358,10 @@ with right:
         y="Predicted_Demand",
         template="plotly_dark",
         title="Regional Demand"
+    )
+
+    fig.update_traces(
+        marker_color="#39d6c5"
     )
 
     fig.update_layout(
@@ -395,6 +407,10 @@ with left:
         title="Inventory Status"
     )
 
+    fig.update_traces(
+        marker_color="#f5b942"
+    )
+
     fig.update_layout(
         paper_bgcolor="#07111f",
         plot_bgcolor="#0d1d30"
@@ -422,6 +438,12 @@ with right:
         risk_chart,
         x="Risk",
         y="Count",
+        color="Risk",
+        color_discrete_map={
+            "LOW": "#39d98a",
+            "MEDIUM": "#f5b942",
+            "HIGH": "#ff5c5c"
+        },
         template="plotly_dark",
         title="Inventory Risk Monitor"
     )
