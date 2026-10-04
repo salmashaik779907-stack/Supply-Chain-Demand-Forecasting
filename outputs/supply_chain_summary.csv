@@ -1,0 +1,11 @@
+Metric,Value
+Total Records,91250.0
+Total SKUs,50.0
+Total Warehouses,5.0
+Total Suppliers,10.0
+Total Regions,4.0
+Average Predicted Demand,20.07650194162181
+Average Inventory Level,471.5223123287671
+Medium Risk Records,620.0
+High Risk Records,0.0
+Total Recommended Order,313160.14155299996
