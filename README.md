@@ -4,7 +4,13 @@
 
 SupplyTrack is a supply chain demand forecasting and inventory management system.
 
+Live Application
 
+https://supplytrack-controltower.streamlit.app/
+
+Demo Video
+
+https://drive.google.com/file/d/1NRfxVjC6IqKGDKfAIKNOGugGFgpmXi3M/view?usp=sharing
 
 \## Features
 
